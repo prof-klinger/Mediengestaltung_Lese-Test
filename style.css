@@ -1,0 +1,98 @@
+:root {
+  --bg: #111316;
+  --fg: #f2f0eb;
+  --muted: #8a8f98;
+  --accent: #ff5c39;
+  --card: #1b1e22;
+  --line: #2a2e33;
+  --mono: "SF Mono", ui-monospace, "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+main {
+  width: min(680px, 100% - 2rem);
+  padding: 3rem 0 4rem;
+}
+
+header h1 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.hint { color: var(--muted); font-size: 0.95rem; margin-top: 0.5rem; }
+
+.clock {
+  font-family: var(--mono);
+  font-size: clamp(3.5rem, 15vw, 7.5rem);
+  font-weight: 300;
+  text-align: center;
+  margin: 3rem 0 2rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.clock.running { color: var(--accent); }
+
+.controls { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+.btn {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.9rem 2.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  transition: transform 0.05s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover:not(:disabled) { border-color: var(--fg); }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.35; cursor: default; }
+.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 600; }
+.btn.ghost { color: var(--muted); }
+
+.laps { margin-top: 3rem; }
+.laps h2 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.6rem;
+}
+.lap-list { list-style: none; }
+.lap-list li {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.05rem;
+}
+.lap-list li:first-child { color: var(--accent); }
+.lap-list .n { color: var(--muted); }
+.empty { color: var(--muted); font-size: 0.9rem; padding: 0.5rem 0; }
+
+.status {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
