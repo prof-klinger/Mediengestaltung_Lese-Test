@@ -7,28 +7,26 @@
 <link rel="stylesheet" href="style.css">
 <script type="module" src="app.js"></script>
 </head>
-<body>
+<body data-page="participant">
 <main>
   <header>
     <h1>Lesetest</h1>
-    <p class="hint">Eine Stoppuhr f&uuml;r alle. Wer stoppt, legt eine Runde ab &ndash; die Uhr l&auml;uft weiter.</p>
+    <p class="hint">Dr&uuml;cke <strong>Stopp</strong>, wenn du fertig gelesen hast. Deine Zeit wird als Runde gespeichert.</p>
   </header>
 
   <section class="clock" id="clock" aria-live="polite">00:00,0</section>
 
   <section class="controls">
-    <button id="btn-start" class="btn primary">Start</button>
-    <button id="btn-stop" class="btn" disabled>Stopp</button>
-    <button id="btn-reset" class="btn ghost">Zur&uuml;cksetzen</button>
+    <button id="btn-stop" class="btn primary" disabled>Stopp</button>
   </section>
+
+  <p id="status" class="status"></p>
 
   <section class="laps">
     <h2>Runden</h2>
     <ol id="lap-list" class="lap-list"></ol>
     <p id="lap-empty" class="empty">Noch keine Runden.</p>
   </section>
-
-  <p id="status" class="status"></p>
 </main>
 </body>
 </html>
