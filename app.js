@@ -133,7 +133,7 @@ if (stopBtn) {
         await push(ref(db, "laps"), { n, elapsed, at: serverTimestamp() });
         myLap = { start: startTime, elapsed };
         try { localStorage.setItem("lese-test-my-lap", JSON.stringify(myLap)); } catch { }
-        setStatus("Deine Zeit wurde gespeichert: " + formatMs(elapsed));
+        setStatus("Deine Zeit wurde gespeichert.");
       }
     } catch (e) {
       stopClicked = false;
