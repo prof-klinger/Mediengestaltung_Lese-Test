@@ -27,6 +27,11 @@ let startTime = null;   // Serverzeit des Starts (ms)
 let pausedAt = null;    // Serverzeit des Anhaltens (ms), null = Uhr läuft
 let offset = 0;          // Unterschied lokale Uhr zu Serverzeit (ms)
 let laps = [];           // [{ n, elapsed }]
+let myLap = null;        // { start, elapsed }: eigene gestoppte Runde, nur Teilnehmerseite
+try {
+  const saved = JSON.parse(localStorage.getItem("lese-test-my-lap"));
+  if (saved && typeof saved.start === "number" && typeof saved.elapsed === "number") myLap = saved;
+} catch { myLap = null; }
 
 function setStatus(text) { statusEl.textContent = text; }
 
@@ -43,29 +48,33 @@ function serverNow() { return Date.now() + offset; }
 function render() {
   const running = startTime !== null;
   const paused = running && pausedAt !== null;
+  const ownStopped = page === "participant" && myLap !== null;
   if (startBtn) startBtn.disabled = running;
-  if (stopBtn) stopBtn.disabled = !running || paused;
+  if (stopBtn) stopBtn.disabled = !running || paused || ownStopped;
   if (exportBtn) exportBtn.disabled = laps.length === 0;
-  clockEl.classList.toggle("running", running && !paused);
-  clockEl.classList.toggle("paused", paused);
+  clockEl.classList.toggle("running", running && !paused && !ownStopped);
+  clockEl.classList.toggle("paused", paused || ownStopped);
 
-  lapEmpty.style.display = laps.length ? "none" : "block";
-  if (lapCount) lapCount.textContent = laps.length ? "(" + laps.length + ")" : "";
-  lapList.innerHTML = "";
-  for (const lap of laps) {
-    const li = document.createElement("li");
-    const n = document.createElement("span");
-    n.className = "n";
-    n.textContent = "Runde " + String(lap.n).padStart(2, "0");
-    const t = document.createElement("span");
-    t.textContent = formatMs(lap.elapsed);
-    li.append(n, t);
-    lapList.append(li);
+  if (lapList) {
+    lapEmpty.style.display = laps.length ? "none" : "block";
+    if (lapCount) lapCount.textContent = laps.length ? "(" + laps.length + ")" : "";
+    lapList.innerHTML = "";
+    for (const lap of laps) {
+      const li = document.createElement("li");
+      const n = document.createElement("span");
+      n.className = "n";
+      n.textContent = "Runde " + String(lap.n).padStart(2, "0");
+      const t = document.createElement("span");
+      t.textContent = formatMs(lap.elapsed);
+      li.append(n, t);
+      lapList.append(li);
+    }
   }
 }
 
 function tick() {
-  if (startTime !== null) clockEl.textContent = formatMs((pausedAt ?? serverNow()) - startTime);
+  if (page === "participant" && myLap !== null) clockEl.textContent = formatMs(myLap.elapsed);
+  else if (startTime !== null) clockEl.textContent = formatMs((pausedAt ?? serverNow()) - startTime);
   else clockEl.textContent = "00:00,0";
 }
 
@@ -76,6 +85,10 @@ onValue(ref(db, "state"), (snap) => {
   const val = snap.val() ?? {};
   startTime = val.startTime ?? null;
   pausedAt = val.pausedAt ?? null;
+  if (myLap && startTime !== myLap.start) {
+    myLap = null;
+    try { localStorage.removeItem("lese-test-my-lap"); } catch { }
+  }
   render();
   tick();
 });
@@ -111,6 +124,8 @@ if (stopBtn) {
         const counter = await runTransaction(ref(db, "state/lapCount"), (current) => (current ?? 0) + 1);
         const n = counter.snapshot.val();
         await push(ref(db, "laps"), { n, elapsed, at: serverTimestamp() });
+        myLap = { start: startTime, elapsed };
+        try { localStorage.setItem("lese-test-my-lap", JSON.stringify(myLap)); } catch { }
         setStatus("Deine Zeit wurde gespeichert: " + formatMs(elapsed));
       }
     } catch (e) {
