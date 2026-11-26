@@ -3,7 +3,7 @@ Gemeinsame Stoppuhr für einen Lesetest: eine Uhr, 40–50 Leute.
 
 Zwei Seiten:
 
-- **Teilnehmende** (`index.html`, `https://prof-klinger.github.io/Mediengestaltung_Lese-Test/`): sehen die laufende Uhr und können mit **Stopp** ihre Zeit abgeben – die Uhr stoppt nur lokal für sie (Anzeige bleibt bei ihrer Zeit stehen, Stopp wird deaktiviert). Die Rundenliste ist nur auf der Admin-Seite sichtbar. Kein Start, kein Reset.
+- **Teilnehmende** (`index.html`, `https://prof-klinger.github.io/Mediengestaltung_Lese-Test/`): sehen die laufende Uhr und können mit **Stopp** ihre Zeit abgeben – die Uhr stoppt nur lokal für sie (Anzeige bleibt bei ihrer Zeit stehen, Stopp ist nur einmal pro Runde möglich). Die Rundenliste ist nur auf der Admin-Seite sichtbar. Kein Start, kein Reset.
 - **Admin** (`admin.html`, `https://prof-klinger.github.io/Mediengestaltung_Lese-Test/admin.html`): Start, **Stopp (Test)** (hält die Uhr für alle Geräte an – die Zeit bleibt sichtbar, es wird keine Runde angelegt), **CSV-Export** der Runden (Excel-kompatibel, Semikolon-getrennt) und Zurücksetzen (mit Sicherheitsabfrage). Diese URL nur der Lehrperson geben.
 
 Beide Seiten nutzen dieselbe Firebase Realtime Database und sind damit in Echtzeit synchron.

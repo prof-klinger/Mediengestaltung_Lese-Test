@@ -32,6 +32,8 @@ try {
   const saved = JSON.parse(localStorage.getItem("lese-test-my-lap"));
   if (saved && typeof saved.start === "number" && typeof saved.elapsed === "number") myLap = saved;
 } catch { myLap = null; }
+let stopClicked = false;
+let lastStart = null;
 
 function setStatus(text) { statusEl.textContent = text; }
 
@@ -48,7 +50,7 @@ function serverNow() { return Date.now() + offset; }
 function render() {
   const running = startTime !== null;
   const paused = running && pausedAt !== null;
-  const ownStopped = page === "participant" && myLap !== null;
+  const ownStopped = stopClicked || (page === "participant" && myLap !== null);
   if (startBtn) startBtn.disabled = running;
   if (stopBtn) stopBtn.disabled = !running || paused || ownStopped;
   if (exportBtn) exportBtn.disabled = laps.length === 0;
@@ -85,9 +87,13 @@ onValue(ref(db, "state"), (snap) => {
   const val = snap.val() ?? {};
   startTime = val.startTime ?? null;
   pausedAt = val.pausedAt ?? null;
-  if (myLap && startTime !== myLap.start) {
-    myLap = null;
-    try { localStorage.removeItem("lese-test-my-lap"); } catch { }
+  if (startTime !== lastStart) {
+    lastStart = startTime;
+    stopClicked = false;
+    if (myLap && startTime !== myLap.start) {
+      myLap = null;
+      try { localStorage.removeItem("lese-test-my-lap"); } catch { }
+    }
   }
   render();
   tick();
@@ -113,7 +119,8 @@ if (startBtn) {
 
 if (stopBtn) {
   stopBtn.addEventListener("click", async () => {
-    if (startTime === null) return;
+    if (startTime === null || stopClicked) return;
+    stopClicked = true;
     stopBtn.disabled = true; // Doppelklick-Schutz
     try {
       const elapsed = (pausedAt ?? serverNow()) - startTime;
@@ -129,6 +136,7 @@ if (stopBtn) {
         setStatus("Deine Zeit wurde gespeichert: " + formatMs(elapsed));
       }
     } catch (e) {
+      stopClicked = false;
       setStatus("Stopp fehlgeschlagen: " + e.message);
     }
   });
