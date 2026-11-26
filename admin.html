@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesetest &ndash; Admin</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body data-page="admin">
+<main>
+  <header>
+    <h1>Lesetest <span class="tag">Admin</span></h1>
+    <p class="hint">Steuerung f&uuml;r die Lehrperson. Start und Zur&uuml;cksetzen wirken f&uuml;r alle Ger&auml;te.</p>
+  </header>
+
+  <section class="clock" id="clock" aria-live="polite">00:00,0</section>
+
+  <section class="controls">
+    <button id="btn-start" class="btn primary">Start</button>
+    <button id="btn-stop" class="btn" disabled>Stopp (Test)</button>
+    <button id="btn-export" class="btn" disabled>CSV exportieren</button>
+    <button id="btn-reset" class="btn ghost">Zur&uuml;cksetzen</button>
+  </section>
+
+  <p id="status" class="status"></p>
+
+  <section class="laps">
+    <h2>Runden <span id="lap-count" class="count"></span></h2>
+    <ol id="lap-list" class="lap-list"></ol>
+    <p id="lap-empty" class="empty">Noch keine Runden.</p>
+  </section>
+</main>
+</body>
+</html>
