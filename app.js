@@ -24,6 +24,7 @@ const statusEl = document.getElementById("status");
 
 // --- Zustand ---
 let startTime = null;   // Serverzeit des Starts (ms)
+let pausedAt = null;    // Serverzeit des Anhaltens (ms), null = Uhr läuft
 let offset = 0;          // Unterschied lokale Uhr zu Serverzeit (ms)
 let laps = [];           // [{ n, elapsed }]
 
@@ -41,10 +42,12 @@ function serverNow() { return Date.now() + offset; }
 
 function render() {
   const running = startTime !== null;
+  const paused = running && pausedAt !== null;
   if (startBtn) startBtn.disabled = running;
-  if (stopBtn) stopBtn.disabled = !running;
+  if (stopBtn) stopBtn.disabled = !running || paused;
   if (exportBtn) exportBtn.disabled = laps.length === 0;
-  clockEl.classList.toggle("running", running);
+  clockEl.classList.toggle("running", running && !paused);
+  clockEl.classList.toggle("paused", paused);
 
   lapEmpty.style.display = laps.length ? "none" : "block";
   if (lapCount) lapCount.textContent = laps.length ? "(" + laps.length + ")" : "";
@@ -62,17 +65,19 @@ function render() {
 }
 
 function tick() {
-  if (startTime !== null) clockEl.textContent = formatMs(serverNow() - startTime);
+  if (startTime !== null) clockEl.textContent = formatMs((pausedAt ?? serverNow()) - startTime);
   else clockEl.textContent = "00:00,0";
 }
 
 // --- Firebase: Sync ---
 onValue(ref(db, ".info/serverTimeOffset"), (snap) => { offset = snap.val() || 0; });
 
-onValue(ref(db, "state/startTime"), (snap) => {
-  startTime = snap.val() ?? null;
+onValue(ref(db, "state"), (snap) => {
+  const val = snap.val() ?? {};
+  startTime = val.startTime ?? null;
+  pausedAt = val.pausedAt ?? null;
   render();
-  if (startTime === null) tick();
+  tick();
 });
 
 onValue(ref(db, "laps"), (snap) => {
@@ -98,10 +103,10 @@ if (stopBtn) {
     if (startTime === null) return;
     stopBtn.disabled = true; // Doppelklick-Schutz
     try {
-      const elapsed = serverNow() - startTime;
+      const elapsed = (pausedAt ?? serverNow()) - startTime;
       if (page === "admin") {
-        await set(ref(db, "state/startTime"), null);
-        setStatus("Uhr nach " + formatMs(elapsed) + " f\u00fcr alle gestoppt.");
+        await runTransaction(ref(db, "state/pausedAt"), (current) => current ?? serverTimestamp());
+        setStatus("Uhr nach " + formatMs(elapsed) + " f\u00fcr alle angehalten.");
       } else {
         const counter = await runTransaction(ref(db, "state/lapCount"), (current) => (current ?? 0) + 1);
         const n = counter.snapshot.val();
@@ -138,7 +143,7 @@ if (resetBtn) {
   resetBtn.addEventListener("click", async () => {
     if (!confirm("Uhr und alle Runden (" + laps.length + ") wirklich zur\u00fccksetzen?")) return;
     try {
-      await set(ref(db, "state"), { startTime: null, lapCount: 0 });
+      await set(ref(db, "state"), { startTime: null, lapCount: 0, pausedAt: null });
       await remove(ref(db, "laps"));
       setStatus("");
     } catch (e) {
