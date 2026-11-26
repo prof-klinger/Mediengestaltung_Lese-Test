@@ -98,13 +98,16 @@ if (stopBtn) {
     if (startTime === null) return;
     stopBtn.disabled = true; // Doppelklick-Schutz
     try {
-      const counter = await runTransaction(ref(db, "state/lapCount"), (current) => (current ?? 0) + 1);
-      const n = counter.snapshot.val();
       const elapsed = serverNow() - startTime;
-      await push(ref(db, "laps"), { n, elapsed, at: serverTimestamp() });
-      setStatus(page === "participant"
-        ? "Deine Zeit wurde gespeichert: " + formatMs(elapsed)
-        : "Runde " + n + " gestoppt: " + formatMs(elapsed));
+      if (page === "admin") {
+        await set(ref(db, "state/startTime"), null);
+        setStatus("Uhr nach " + formatMs(elapsed) + " f\u00fcr alle gestoppt.");
+      } else {
+        const counter = await runTransaction(ref(db, "state/lapCount"), (current) => (current ?? 0) + 1);
+        const n = counter.snapshot.val();
+        await push(ref(db, "laps"), { n, elapsed, at: serverTimestamp() });
+        setStatus("Deine Zeit wurde gespeichert: " + formatMs(elapsed));
+      }
     } catch (e) {
       setStatus("Stopp fehlgeschlagen: " + e.message);
     }
